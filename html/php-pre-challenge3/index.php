@@ -15,14 +15,26 @@ $records = $db->query("SELECT * FROM prechallenge3 WHERE value <= $limit ORDER B
 foreach($records as $number) {
   $dbarry[] = $number['value'];
 }
-function everyCombination($nums) {
+function everyCombination($arrayedNums) {
   $allCombinations = array(array());
-  foreach($nums as $num) {
+  foreach($arrayedNums as $arrayedNum) {
     foreach($allCombinations as $combination) {
-      array_push($allCombinations, array_merge(array($num), $combination));
+      array_push($allCombinations, array_merge(array($arrayedNum), $combination));
     }
   }
   return $allCombinations;
 }
 
-echo json_encode(everyCombination($dbarry));
+/*echo json_encode(everyCombination($dbarry));*/
+
+$forComparisons = everyCombination($dbarry);
+foreach($forComparisons as $forComparison) {
+  if(array_sum($forComparison) === (int)$limit) {
+    $matchedCombinations[] = $forComparison;
+  }
+}
+if(is_null($matchedCombinations)) {
+  $matchedCombinations = [[]];
+}
+
+echo json_encode($matchedCombinations, JSON_NUMERIC_CHECK);
