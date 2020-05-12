@@ -2,7 +2,7 @@
 $limit = mb_convert_kana($_GET['target'], 'a', 'UTF-8');
 if(!is_numeric($limit) || $limit <= 0 || preg_match('/^([1-9]\d*|0)\.(\d+)?$/', $limit)) {
   http_response_code(400);
-  echo ('1以上の整数をターゲット値としてください');
+  echo json_encode('1以上の整数をターゲット値としてください', JSON_UNESCAPED_UNICODE);
   exit();
 }
 
@@ -13,7 +13,10 @@ $dbpassword = 'test';
 try {
   $db = new PDO($dsn,$dbuser,$dbpassword);
 } catch(PDOException $e) {
-  echo 'DB接続エラー: ' . $e->getMessage();
+  http_response_code(500);
+  $errMsg = 'DB接続エラー: ' . $e->getMessage();
+  echo json_encode($errMsg, JSON_UNESCAPED_UNICODE);
+  exit();
 }
 
 /* ターゲット値以下の数値をデータベースより取得し、配列($dbarry)に格納 */
