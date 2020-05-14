@@ -11,8 +11,8 @@ if (isset($_SESSION['id'])) {
 	$message = $messages->fetch();
 
 	if ($message['member_id'] == $_SESSION['id']) {
-		// 削除する
-		$del = $db->prepare('DELETE FROM posts WHERE id=?');
+		// 論理削除
+		$del = $db->prepare('UPDATE posts SET deleteflag=1 WHERE id=?');
 		$del->execute(array($id));
 	}
 }

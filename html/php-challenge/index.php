@@ -36,7 +36,7 @@ if ($page == '') {
 $page = max($page, 1);
 
 // 最終ページを取得する
-$counts = $db->query('SELECT COUNT(*) AS cnt FROM posts');
+$counts = $db->query('SELECT COUNT(*) AS cnt FROM posts WHERE deleteflag=0');
 $cnt = $counts->fetch();
 $maxPage = ceil($cnt['cnt'] / 5);
 $page = min($page, $maxPage);
@@ -44,7 +44,8 @@ $page = min($page, $maxPage);
 $start = ($page - 1) * 5;
 $start = max(0, $start);
 
-$posts = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p WHERE m.id=p.member_id ORDER BY p.created DESC LIMIT ?, 5');
+$posts = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p
+    WHERE m.id=p.member_id AND p.deleteflag=0 ORDER BY created DESC LIMIT ?, 5');
 $posts->bindParam(1, $start, PDO::PARAM_INT);
 $posts->execute();
 
@@ -105,6 +106,7 @@ foreach ($posts as $post):
 ?>
     <div class="msg">
     <img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
+		<p>Retweeted by <?php echo h($post['retweeted_by']); ?></p>
     <p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
     <p class="day"><a href="view.php?id=<?php echo h($post['id']); ?>"><?php echo h($post['created']); ?></a>
 		<?php
@@ -116,8 +118,20 @@ h($post['reply_post_id']); ?>">
 <?php
 endif;
 ?>
+<a href="retweet.php?retweeted_post_id=
+	<?php 
+		if($post['retweeted_post_id'] > 0) {
+			echo $post['retweeted_post_id'];
+		} else {
+			echo $post['id'];
+		}
+	?>
+	<?php echo '&tweeted_by=' ?><?php echo h($post['member_id']); ?>
+	<?php echo '&retweeted_message=' ?><?php echo h($post['message']); ?>
+	<?php echo '&retweeted_by=' ?><?php echo h($_SESSION['id']); ?>
+	">RT</a>
 <?php
-if ($_SESSION['id'] == $post['member_id']):
+if ($_SESSION['id'] === $post['member_id']):
 ?>
 [<a href="delete.php?id=<?php echo h($post['id']); ?>"
 style="color: #F33;">削除</a>]
