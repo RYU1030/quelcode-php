@@ -68,16 +68,8 @@ function h($value) {
 function makeLink($value) {
 	return mb_ereg_replace("(https?)(://[[:alnum:]\+\$\;\?\.%,!#~*/:@&=_-]+)", '<a href="\1\2">\1\2</a>' , $value);
 }
-
-// リツイートされた回数の取得
-$rtCounts = $db->query('SELECT retweeted_post_id, message, COUNT(*) as rtCount FROM posts WHERE retweeted_post_id > 0 AND deleteflag = 0 GROUP BY retweeted_post_id');
-$rtCounts->execute();
-$rtCounts = $rtCounts->fetchall();
-/*echo "<pre>";
-	print_r($rtCounts);
-echo "</pre>";
-exit();*/
 ?>
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -85,7 +77,7 @@ exit();*/
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>ひとこと掲示板</title>
-
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
 	<link rel="stylesheet" href="style.css" />
 </head>
 
@@ -118,11 +110,11 @@ foreach ($posts as $post):
     <img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
 		<?php if ($post['retweeted_post_id'] > 0) :?>
 			<?php 
-				$whoRTed = $db->prepare('SELECT name FROM members WHERE id=?');
+				$whoRTed = $db->prepare('SELECT id, name FROM members WHERE id=?');
 				$whoRTed->execute(array($post['retweeted_by']));
 				$whoRTed = $whoRTed->fetch();
 			?>
-			<p style="font-size: 11px;"><?php echo $whoRTed['name']; ?> さんがリツイートしました</p>
+			<p style="font-size: 11px; color: #007700;"><?php echo $whoRTed['name']; ?> さんがリツイートしました</p>
 		<?php endif; ?>
     <p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
     <p class="day"><a href="view.php?id=<?php echo h($post['id']); ?>"><?php echo h($post['created']); ?></a>
@@ -135,35 +127,77 @@ h($post['reply_post_id']); ?>">
 <?php
 endif;
 ?>
-<a href="retweet.php?retweeted_post_id=
-	<?php 
-		if($post['retweeted_post_id'] > 0) {
-			echo $post['retweeted_post_id'];
-		} else {
-			echo $post['id'];
-		}
-	?>
-	<?php echo '&tweeted_by=' ?><?php echo h($post['member_id']); ?>
-	<?php echo '&retweeted_message=' ?><?php echo h($post['message']); ?>
-	<?php echo '&retweeted_by=' ?><?php echo h($_SESSION['id']); ?>
-	">RT
-	<?php
-		if ($post['retweeted_post_id'] == 0) {
-			$rtCounts = $db->prepare('SELECT COUNT(*) as rtCnt FROM posts 
-				WHERE retweeted_post_id=? AND deleteflag = 0 GROUP BY retweeted_post_id;');
-			$rtCounts->execute(array($post['id']));
-			$rtCounts = $rtCounts->fetch();
-			echo $rtCounts['rtCnt'];
-		}
-		if ($post['retweeted_post_id'] > 0) {
-			$rtCounts = $db->prepare('SELECT COUNT(*) as rtCnt FROM posts 
-				WHERE retweeted_post_id=? AND deleteflag = 0 GROUP BY retweeted_post_id;');
-			$rtCounts->execute(array($post['retweeted_post_id']));
-			$rtCounts = $rtCounts->fetch();
-			echo $rtCounts['rtCnt'];
-		}
-	?>
-</a>
+
+<?php
+	$checkRT = $db->prepare('SELECT COUNT(*) AS rtCheck FROM posts WHERE (member_id=? OR retweeted_post_id=?) 
+		AND retweeted_by=? AND deleteflag=0');
+	$checkRT->execute(array(
+		$post['member_id'],
+		$post['retweeted_post_id'],	
+		$_SESSION['id']
+	));
+	$checkRT = $checkRT->fetch();
+	if ($checkRT['rtCheck'] > 0) :
+?>
+		<a href="retweet.php?retweeted_post_id=
+			<?php 
+				if($post['retweeted_post_id'] > 0) {
+					echo $post['retweeted_post_id'];
+				} else {
+					echo $post['id'];
+				}
+			?>
+			<?php echo '&tweeted_by=' ?><?php echo h($post['member_id']); ?>
+			<?php echo '&retweeted_message=' ?><?php echo h($post['message']); ?>
+			<?php echo '&retweeted_by=' ?><?php echo h($_SESSION['id']); ?>
+			" style="text-decoration: none; color: #007700;"><i class="fas fa-retweet"></i>
+			<?php
+				if ($post['retweeted_post_id'] == 0) {
+					$rtCounts = $db->prepare('SELECT COUNT(*) as rtCnt FROM posts 
+						WHERE retweeted_post_id=? AND deleteflag = 0 GROUP BY retweeted_post_id;');
+					$rtCounts->execute(array($post['id']));
+					$rtCounts = $rtCounts->fetch();
+					echo $rtCounts['rtCnt'];
+					} else {
+						$rtCounts = $db->prepare('SELECT COUNT(*) as rtCnt FROM posts 
+							WHERE retweeted_post_id=? AND deleteflag = 0 GROUP BY retweeted_post_id;');
+						$rtCounts->execute(array($post['retweeted_post_id']));
+						$rtCounts = $rtCounts->fetch();
+						echo $rtCounts['rtCnt'];
+					}
+			?>
+		</a>
+	<?php else : ?>
+		<a href="retweet.php?retweeted_post_id=
+			<?php 
+				if($post['retweeted_post_id'] > 0) {
+					echo $post['retweeted_post_id'];
+				} else {
+					echo $post['id'];
+				}
+			?>
+			<?php echo '&tweeted_by=' ?><?php echo h($post['member_id']); ?>
+			<?php echo '&retweeted_message=' ?><?php echo h($post['message']); ?>
+			<?php echo '&retweeted_by=' ?><?php echo h($_SESSION['id']); ?>
+			" style="text-decoration: none;"><i class="fas fa-retweet"></i>
+			<?php
+				if ($post['retweeted_post_id'] == 0) {
+					$rtCounts = $db->prepare('SELECT COUNT(*) as rtCnt FROM posts 
+						WHERE retweeted_post_id=? AND deleteflag = 0 GROUP BY retweeted_post_id;');
+					$rtCounts->execute(array($post['id']));
+					$rtCounts = $rtCounts->fetch();
+					echo $rtCounts['rtCnt'];
+					} else {
+						$rtCounts = $db->prepare('SELECT COUNT(*) as rtCnt FROM posts 
+							WHERE retweeted_post_id=? AND deleteflag = 0 GROUP BY retweeted_post_id;');
+						$rtCounts->execute(array($post['retweeted_post_id']));
+						$rtCounts = $rtCounts->fetch();
+						echo $rtCounts['rtCnt'];
+					}
+			?>
+		</a>
+<?php endif; ?>
+
 <?php 
 	if ($post['retweeted_post_id'] == 0 || $_SESSION['id'] == $post['retweeted_by']) {
 		if ($_SESSION['id'] == $post['member_id']) {	
@@ -208,3 +242,9 @@ if ($page < $maxPage) {
 </div>
 </body>
 </html>
+<?php
+/*echo "<pre>";
+	print_r($rtCounts);
+	echo "</pre>";
+	exit();
+	*/
