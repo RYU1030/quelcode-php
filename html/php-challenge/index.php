@@ -139,7 +139,7 @@ endif;
 	$checkRT = $checkRT->fetch();
 	if ($checkRT['rtCheck'] > 0) :
 ?>
-		<a href="retweet.php?retweeted_post_id=
+		<a href="unretweet.php?unretweeted_post_id=
 			<?php 
 				if($post['retweeted_post_id'] > 0) {
 					echo $post['retweeted_post_id'];
@@ -147,9 +147,7 @@ endif;
 					echo $post['id'];
 				}
 			?>
-			<?php echo '&tweeted_by=' ?><?php echo h($post['member_id']); ?>
-			<?php echo '&retweeted_message=' ?><?php echo h($post['message']); ?>
-			<?php echo '&retweeted_by=' ?><?php echo h($_SESSION['id']); ?>
+			<?php echo '&unretweeted_by=' ?><?php echo h($_SESSION['id']); ?>
 			" style="text-decoration: none; color: #007700;"><i class="fas fa-retweet"></i>
 			<?php
 				if ($post['retweeted_post_id'] == 0) {
