@@ -4,7 +4,7 @@ require('dbconnect.php');
 error_reporting(E_ALL);
 
 if (isset($_SESSION['id'])) {
-  // リツイートする
+  // 「いいね」キャンセル処理
   $like_undone_by = $_REQUEST['like_undone_by'];
   $likeUndone_post_id = $_REQUEST['likeUndone_post_id'];
   $likeUndo = $db->prepare('UPDATE likes SET deleteflag=1

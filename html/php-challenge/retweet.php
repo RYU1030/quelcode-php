@@ -4,7 +4,7 @@ require('dbconnect.php');
 error_reporting(E_ALL);
 
 if (isset($_SESSION['id'])) {
-  // リツイートする
+  // リツイート登録処理
   $tweeted_by = $_REQUEST['tweeted_by'];
   $retweeted_message = $_REQUEST['retweeted_message'];
   $retweeted_by = $_REQUEST['retweeted_by'];
