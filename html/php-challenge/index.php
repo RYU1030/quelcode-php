@@ -1,7 +1,7 @@
 <?php
 session_start();
 require('dbconnect.php');
-error_reporting(E_ALL);
+//error_reporting(E_ALL);
 
 if (isset($_SESSION['id']) && $_SESSION['time'] + 3600 > time()) {
 	// ログインしている
@@ -113,6 +113,7 @@ function makeLink($value)
 			?>
 				<div class="msg">
 					<img src="member_picture/<?php echo h($post['picture']); ?>" width="48" height="48" alt="<?php echo h($post['name']); ?>" />
+					<!-- 投稿がリツイートされたものの場合は、リツイートしたユーザの名前を投稿の上に表示 -->
 					<?php if ($post['retweeted_post_id'] > 0) : ?>
 						<?php
 						$whoRTed = $db->prepare('SELECT id, name FROM members WHERE id=?');
@@ -134,6 +135,7 @@ function makeLink($value)
 						?>
 
 						<?php
+						// ログインしているユーザが、表示されている投稿をリツイート済みかのチェック
 						$checkRT = $db->prepare('SELECT COUNT(*) AS rtCheck FROM posts WHERE (member_id=? OR retweeted_post_id=?) 
 		AND retweeted_by=? AND deleteflag=0');
 						$checkRT->execute(array(
@@ -144,6 +146,7 @@ function makeLink($value)
 						$checkRT = $checkRT->fetch();
 						if ($checkRT['rtCheck'] > 0) :
 						?>
+							<!-- 既にリツイート済みの場合は、リツイートキャンセルの処理に移行する  -->
 							<a href="unretweet.php?unretweeted_post_id=
 			<?php
 							if ($post['retweeted_post_id'] > 0) {
@@ -171,6 +174,7 @@ function makeLink($value)
 								?>
 							</a>
 						<?php else : ?>
+							<!-- リツイートしていない投稿の場合は、リツイート処理に移行 -->
 							<a href="retweet.php?retweeted_post_id=
 			<?php
 							if ($post['retweeted_post_id'] > 0) {
@@ -200,6 +204,33 @@ function makeLink($value)
 								?>
 							</a>
 						<?php endif; ?>
+
+						<a href="likes_do.php?liked_post_id=
+						<?php
+						if ($post['retweeted_post_id'] > 0) {
+							echo $post['retweeted_post_id'];
+						} else {
+							echo $post['id'];
+						}
+						?>
+							<?php echo '&liked_by=' ?><?php echo h($_SESSION['id']); ?>
+							" style="text-decoration: none;"><i class="fas fa-heart"></i>
+							<?php
+							if ($post['retweeted_post_id'] == 0) {
+								$likeCounts = $db->prepare('SELECT COUNT(*) as likeCnt FROM likes 
+						WHERE liked_post_id=? AND deleteflag = 0 GROUP BY liked_post_id;');
+								$likeCounts->execute(array($post['id']));
+								$likeCounts = $likeCounts->fetch();
+								echo $likeCounts['likeCnt'];
+							} else {
+								$likeCounts = $db->prepare('SELECT COUNT(*) as likeCnt FROM likes 
+						WHERE liked_post_id=? AND deleteflag = 0 GROUP BY liked_post_id;');
+								$likeCounts->execute(array($post['retweeted_post_id']));
+								$likeCounts = $likeCounts->fetch();
+								echo $likeCounts['likeCnt'];
+							}
+							?>
+						</a>
 
 						<?php
 						if ($post['retweeted_post_id'] == 0 || $_SESSION['id'] == $post['retweeted_by']) {
