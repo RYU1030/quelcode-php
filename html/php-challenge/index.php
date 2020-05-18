@@ -223,7 +223,7 @@ function makeLink($value)
 						$checkLike = $checkLike->fetch();
 						if ($checkLike['likeCheck'] > 0) : ?>
 
-							<a href="likes_do.php?liked_post_id=
+							<a href="likes_undo.php?likeUndone_post_id=
 						<?php
 							if ($post['retweeted_post_id'] > 0) {
 								echo $post['retweeted_post_id'];
@@ -231,7 +231,7 @@ function makeLink($value)
 								echo $post['id'];
 							}
 						?>
-							<?php echo '&liked_by=' ?><?php echo h($_SESSION['id']); ?>
+							<?php echo '&like_undone_by=' ?><?php echo h($_SESSION['id']); ?>
 							" style="text-decoration: none; color: #FF0000;"><i class="fas fa-heart"></i>
 								<?php
 								if ($post['retweeted_post_id'] == 0) {
@@ -321,11 +321,4 @@ function makeLink($value)
 		</div>
 	</div>
 </body>
-
 </html>
-<?php
-/*echo "<pre>";
-	print_r($rtCounts);
-	echo "</pre>";
-	exit();
-	*/
