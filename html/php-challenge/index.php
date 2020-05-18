@@ -116,7 +116,7 @@ function makeLink($value)
 					<!-- 投稿がリツイートされたものの場合は、リツイートしたユーザの名前を投稿の上に表示 -->
 					<?php if ($post['retweeted_post_id'] > 0) : ?>
 						<?php
-						$whoRTed = $db->prepare('SELECT id, name FROM members WHERE id=?');
+						$whoRTed = $db->prepare('SELECT name FROM members WHERE id=?');
 						$whoRTed->execute(array($post['retweeted_by']));
 						$whoRTed = $whoRTed->fetch();
 						?>
@@ -136,13 +136,21 @@ function makeLink($value)
 
 						<?php
 						// ログインしているユーザが、表示されている投稿をリツイート済みかのチェック
-						$checkRT = $db->prepare('SELECT COUNT(*) AS rtCheck FROM posts WHERE (member_id=? OR retweeted_post_id=?) 
+						$checkRT = $db->prepare('SELECT COUNT(*) AS rtCheck FROM posts WHERE (id=? OR retweeted_post_id=?) 
 		AND retweeted_by=? AND deleteflag=0');
-						$checkRT->execute(array(
-							$post['member_id'],
-							$post['retweeted_post_id'],
-							$_SESSION['id']
-						));
+						if ($post['retweeted_by'] == 0) {
+							$checkRT->execute(array(
+								$post['id'],
+								$post['id'],
+								$_SESSION['id']
+							));
+						} else {
+							$checkRT->execute(array(
+								$post['retweeted_post_id'],
+								$post['retweeted_post_id'],
+								$_SESSION['id']
+							));
+						}
 						$checkRT = $checkRT->fetch();
 						if ($checkRT['rtCheck'] > 0) :
 						?>
