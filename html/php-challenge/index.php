@@ -33,13 +33,13 @@ if (!empty($_POST)) {
 
 // 投稿を取得する
 $page = $_REQUEST['page'];
-if ($page == '') {
+if ($page === '') {
 	$page = 1;
 }
 $page = max($page, 1);
 
 // 最終ページを取得する
-$counts = $db->query('SELECT COUNT(*) AS cnt FROM posts WHERE deleteflag=0');
+$counts = $db->query('SELECT COUNT(*) AS cnt FROM posts WHERE delete_flag=0');
 $cnt = $counts->fetch();
 $maxPage = ceil($cnt['cnt'] / 5);
 $page = min($page, $maxPage);
@@ -48,7 +48,7 @@ $start = ($page - 1) * 5;
 $start = max(0, $start);
 
 $posts = $db->prepare('SELECT m.name, m.picture, p.* FROM members m, posts p
-    WHERE m.id=p.member_id AND p.deleteflag=0 ORDER BY created DESC LIMIT ?, 5');
+    WHERE m.id=p.member_id AND p.delete_flag=0 ORDER BY created DESC LIMIT ?, 5');
 $posts->bindParam(1, $start, PDO::PARAM_INT);
 $posts->execute();
 
@@ -120,15 +120,16 @@ function makeLink($value)
 						$whoRTed->execute(array($post['retweeted_by']));
 						$whoRTed = $whoRTed->fetch();
 						?>
-						<p style="font-size: 11px; color: #007700;"><?php echo $whoRTed['name']; ?> さんがリツイートしました</p>
+						<p style="font-size: 11px; color: #007700;"><i class="fas fa-retweet"></i> <?php echo $whoRTed['name']; ?> さんがリツイートしました</p>
 					<?php endif; ?>
 					<p><?php echo makeLink(h($post['message'])); ?><span class="name">（<?php echo h($post['name']); ?>）</span>[<a href="index.php?res=<?php echo h($post['id']); ?>">Re</a>]</p>
 					<p class="day"><a href="view.php?id=<?php echo h($post['id']); ?>"><?php echo h($post['created']); ?></a>
 						<?php
 						if ($post['reply_post_id'] > 0) :
 						?>
-							<a href="view.php?id=<?php echo
-																			h($post['reply_post_id']); ?>">
+							<a href="view.php?id=
+							<?php echo
+								h($post['reply_post_id']); ?>">
 								返信元のメッセージ</a>
 						<?php
 						endif;
@@ -137,8 +138,8 @@ function makeLink($value)
 						<?php
 						// ログインしているユーザが、表示されている投稿をリツイート済みかのチェック
 						$checkRT = $db->prepare('SELECT COUNT(*) AS rtCheck FROM posts WHERE (id=? OR retweeted_post_id=?) 
-		AND retweeted_by=? AND deleteflag=0');
-						if ($post['retweeted_by'] == 0) {
+							AND retweeted_by=? AND delete_flag=0');
+						if ((int) $post['retweeted_by'] === 0) {
 							$checkRT->execute(array(
 								$post['id'],
 								$post['id'],
@@ -156,35 +157,35 @@ function makeLink($value)
 						?>
 							<!-- 既にリツイート済みの場合は、unretweet.phpへのリンクを設置  -->
 							<a href="unretweet.php?unretweeted_post_id=
-			<?php
+							<?php
 							if ($post['retweeted_post_id'] > 0) {
 								echo $post['retweeted_post_id'];
 							} else {
 								echo $post['id'];
 							}
-			?>
-			<?php echo '&unretweeted_by=' ?><?php echo h($_SESSION['id']); ?>
-			" style="text-decoration: none; color: #007700;"><i class="fas fa-retweet"></i>
+							?>
+							<?php echo '&unretweeted_by=' ?><?php echo h($_SESSION['id']); ?>
+							" style="text-decoration: none; color: #007700;"><i class="fas fa-retweet"></i>
 							<?php else : ?>
 								<!-- リツイートしていない投稿の場合は、retweet.phpへのリンクを設置 -->
 								<a href="retweet.php?retweeted_post_id=
-			<?php
+							<?php
 							if ($post['retweeted_post_id'] > 0) {
 								echo $post['retweeted_post_id'];
 							} else {
 								echo $post['id'];
 							}
-			?>
-			<?php echo '&tweeted_by=' ?><?php echo h($post['member_id']); ?>
-			<?php echo '&retweeted_message=' ?><?php echo h($post['message']); ?>
-			<?php echo '&retweeted_by=' ?><?php echo h($_SESSION['id']); ?>
-			" style="text-decoration: none;"><i class="fas fa-retweet"></i>
+							?>
+							<?php echo '&tweeted_by=' ?><?php echo h($post['member_id']); ?>
+							<?php echo '&retweeted_message=' ?><?php echo h($post['message']); ?>
+							<?php echo '&retweeted_by=' ?><?php echo h($_SESSION['id']); ?>
+							" style="text-decoration: none;"><i class="fas fa-retweet"></i>
 								<?php endif; ?>
 								<!-- リツイート数の表示  -->
 								<?php
 								$rtCounts = $db->prepare('SELECT COUNT(*) as rtCnt FROM posts 
-						WHERE retweeted_post_id=? AND deleteflag = 0 GROUP BY retweeted_post_id;');
-								if ($post['retweeted_post_id'] == 0) {
+							WHERE retweeted_post_id=? AND delete_flag = 0 GROUP BY retweeted_post_id;');
+								if ((int) $post['retweeted_post_id'] === 0) {
 									$rtCounts->execute(array($post['id']));
 								} else {
 									$rtCounts->execute(array($post['retweeted_post_id']));
@@ -193,12 +194,11 @@ function makeLink($value)
 								echo $rtCounts['rtCnt'];
 								?>
 								</a>
-
 								<?php
 								// ログインしているユーザが、表示されている投稿を「いいね」済みかのチェック
 								$checkLike = $db->prepare('SELECT COUNT(*) AS likeCheck FROM likes WHERE liked_post_id=? 
-						AND liked_by=? AND deleteflag=0');
-								if ($post['retweeted_post_id'] == 0) {
+							AND liked_by=? AND delete_flag=0');
+								if ((int) $post['retweeted_post_id'] === 0) {
 									$checkLike->execute(array(
 										$post['id'],
 										$_SESSION['id'],
@@ -213,33 +213,33 @@ function makeLink($value)
 								// 「いいね」済みの投稿には、likes_undo.phpへのリンクを設置
 								if ($checkLike['likeCheck'] > 0) : ?>
 									<a href="likes_undo.php?likeUndone_post_id=
-						<?php
+							<?php
 									if ($post['retweeted_post_id'] > 0) {
 										echo $post['retweeted_post_id'];
 									} else {
 										echo $post['id'];
 									}
-						?>
+							?>
 							<?php echo '&like_undone_by=' ?><?php echo h($_SESSION['id']); ?>
 							" style="text-decoration: none; color: #FF0000;"><i class="fas fa-heart"></i>
 									<?php else : ?>
 										<!-- 「いいね」していない投稿の場合は、likes_do.phpへのリンクを設置 -->
 										<a href="likes_do.php?liked_post_id=
-						<?php
+							<?php
 									if ($post['retweeted_post_id'] > 0) {
 										echo $post['retweeted_post_id'];
 									} else {
 										echo $post['id'];
 									}
-						?>
+							?>
 							<?php echo '&liked_by=' ?><?php echo h($_SESSION['id']); ?>
 							" style="text-decoration: none;"><i class="fas fa-heart"></i>
 										<?php endif; ?>
 										<!-- 「いいね」カウントの表示 -->
 										<?php
 										$likeCounts = $db->prepare('SELECT COUNT(*) as likeCnt FROM likes 
-						WHERE liked_post_id=? AND deleteflag = 0 GROUP BY liked_post_id;');
-										if ($post['retweeted_post_id'] == 0) {
+								WHERE liked_post_id=? AND delete_flag = 0 GROUP BY liked_post_id;');
+										if ((int) $post['retweeted_post_id'] === 0) {
 											$likeCounts->execute(array($post['id']));
 										} else {
 											$likeCounts->execute(array($post['retweeted_post_id']));
@@ -250,8 +250,8 @@ function makeLink($value)
 										</a>
 
 										<?php
-										if ($post['retweeted_post_id'] == 0 || $_SESSION['id'] == $post['retweeted_by']) {
-											if ($_SESSION['id'] == $post['member_id']) {
+										if ((int) $post['retweeted_post_id'] === 0 || $_SESSION['id'] === $post['retweeted_by']) {
+											if ($_SESSION['id'] === $post['member_id']) {
 										?>
 												[<a href="delete.php?id=<?php echo h($post['id']); ?>" style="color: #F33;">削除</a>]
 										<?php

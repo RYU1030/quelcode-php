@@ -7,7 +7,7 @@ if (isset($_SESSION['id'])) {
   // 「いいね」キャンセル処理
   $like_undone_by = $_REQUEST['like_undone_by'];
   $likeUndone_post_id = $_REQUEST['likeUndone_post_id'];
-  $likeUndo = $db->prepare('UPDATE likes SET deleteflag=1
+  $likeUndo = $db->prepare('UPDATE likes SET delete_flag=1
     WHERE liked_post_id=? AND liked_by=?');
   $likeUndo->execute(array(
     $likeUndone_post_id,

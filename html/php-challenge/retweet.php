@@ -10,7 +10,7 @@ if (isset($_SESSION['id'])) {
   $retweeted_by = $_REQUEST['retweeted_by'];
   $retweeted_post_id = $_REQUEST['retweeted_post_id'];
   $message = $db->prepare('INSERT INTO posts SET 
-      member_id=?, message=?, retweeted_post_id=?, retweeted_by=?, created=NOW()');
+    member_id=?, message=?, retweeted_post_id=?, retweeted_by=?, created=NOW()');
   $message->execute(array(
     $tweeted_by,
     $retweeted_message,
