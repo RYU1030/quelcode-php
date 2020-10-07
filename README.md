@@ -109,7 +109,7 @@ Array
 ```
 ### データーベースへの接続と探索アルゴリズムに関する問題 
 
-[コードを見る](https://github.com/RYU1030/quelcode-php/tree/master/html/php-pre-challenge3)
+[コードを見る](https://github.com/RYU1030/quelcode-php/blob/master/html/php-pre-challenge3/index.php)
 
 - GETパラメータ[target]から1以上の整数を受け取り、既にデータベースに保存されている数値の羅列から、足してその数になる組み合わせを探しJSON形式で出力します。
 - 同数を作る複数の組み合わせがある場合は、全パターンを出力します。
