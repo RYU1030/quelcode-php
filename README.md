@@ -65,7 +65,7 @@ dbname:test
 
 ### FizzBuzz問題
 
-[コードを見る](https://github.com/KakoFujimoto/quelcode-php/blob/feature/php-pre-challenge1/html/php-pre-challenge1/index.php)
+[コードを見る](https://github.com/RYU1030/quelcode-php/blob/master/html/php-pre-challenge1/index.php)
 
 - 1から100までの数をforで繰り返しプリントするプログラムです。
 - 但し、3の倍数の時には数の代わりに「3の倍数」と出力します。
@@ -75,7 +75,7 @@ dbname:test
 
 ### 配列操作に関する問題
 
-[コードを見る](https://github.com/KakoFujimoto/quelcode-php/blob/feature/php-pre-challenge2/html/php-pre-challenge2/index.php)
+[コードを見る](https://github.com/RYU1030/quelcode-php/blob/master/html/php-pre-challenge2/index.php)
 
 - GETパラーメータ[array]で受け取った配列を、ソート関数を使わず並べ替えるプログラムです。
 
@@ -109,7 +109,7 @@ Array
 ```
 ### データーベースへの接続と探索アルゴリズムに関する問題 
 
-[コードを見る](https://github.com/KakoFujimoto/quelcode-php/blob/master/html/php-pre-challenge3/index.php)
+[コードを見る](https://github.com/RYU1030/quelcode-php/tree/master/html/php-pre-challenge3)
 
 - GETパラメータ[target]から1以上の整数を受け取り、既にデータベースに保存されている数値の羅列から、足してその数になる組み合わせを探しJSON形式で出力します。
 - 同数を作る複数の組み合わせがある場合は、全パターンを出力します。
